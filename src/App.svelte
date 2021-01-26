@@ -2,9 +2,11 @@
 	const uid = "0bayGCeRXFpwNSJAzW9T";
 	const db = firebase.firestore();
 
-	let groups = {};		// History of chats { groupId: { messages: { sentAt: { sendBy, text } } } }
+	let groups = {};				// History of chats { groupId: { messages: { sentAt: { sendBy, text } } } }
 	let userSubscription = null;	// Group subscriptions (call to unsubscribe)
 	let groupSubscriptions = [];	// Chat subscriptions (call each to unsubscribe)
+	
+	let focusedGroupId = "";
 
 	InitializeSubscriptions();
 
@@ -15,8 +17,10 @@
 
 		userSubscription && userSubscription();
 
+		const usersCollection = db.collection("Users");
+
 		// Update group subscriptions everytime a new group added or removed.
-		userSubscription = db.collection("Users").doc(uid).onSnapshot(doc => {
+		userSubscription = usersCollection.doc(uid).onSnapshot(doc => {
 			// Unsubscribe previous subscriptions
 			for (const unsubscribe of groupSubscriptions) {
 				unsubscribe();
@@ -28,11 +32,21 @@
 			// Update groups array everytime a group gets mutated (a new message arrives)
 			for (const groupId of user.groups) {
 				db.collection("Groups").doc(groupId).onSnapshot(doc => {
-					const history = doc.data();
-					groups[groupId] = history;
+					const group = doc.data();
+					groups[groupId] = group;
 
-					// Mutate groups array so Svelte will re-render.
-					groups = groups;
+					// Convert userArray to userMap ([userId] to {userId: displayName})
+					const userArray = groups[groupId]["users"];
+					const userMap = {};
+					for (const userId of userArray) {
+						usersCollection.doc(userId).get().then(doc => {
+							userMap[userId] = doc.data().displayName;
+
+							// Mutate groups array so Svelte will re-render.
+							groups = groups;
+						});
+					}
+					groups[groupId]["users"] = userMap;
 				});
 			}
 		});
@@ -42,24 +56,30 @@
 		const ref = db.collection('Groups').doc(groupId);
 		const sentAt = Date.now();
 
-		const data = {};
-		data[sentAt] = {};
-		data[sentAt]["sentBy"] = uid;
-		data[sentAt]["text"] = message;
+		const data = { messages: {} };
+		data["messages"][sentAt] = {};
+		data["messages"][sentAt]["sentBy"] = uid;
+		data["messages"][sentAt]["text"] = message;
 
 		ref.set(data, { merge: true });
 	}
 
 	function AddToGroup(userId, groupId) {
-		const ref = db.collection('Users').doc(userId);
+		const usersDoc = db.collection('Users').doc(userId);
+		const groupDoc = db.collection('Groups').doc(groupId);
 
-		ref.get().then(doc => {
+		// Add group to the user
+		usersDoc.get().then(doc => {
 			const data = doc.data();
-			data.groups = [...doc.data().groups, groupId];
-			ref.set(data);
-		}).catch(err => {
-			console.error("Error! Probably user does not exists...");
-			console.error(err);
+			data.groups = [...new Set([...data.groups, groupId])];
+			usersDoc.set(data);
+		});
+
+		// Add user to the group
+		groupDoc.get().then(doc => {
+			const data = doc.data();
+			data.users = [...new Set([...data.users, userId])];
+			groupDoc.set(data);
 		});
 	}
 
@@ -75,18 +95,35 @@
 
 	function CreateGroup(secondUserId) {
 		const ref = db.collection('Groups');
+		const data = { messages: {}, users: [ uid, secondUserId ] };
 
-		ref.add({}).then(docRef => {
-			AddToGroup(uid, docRef.id)
-			AddToGroup(secondUserId, docRef.id)
+		ref.add(data).then(docRef => {
+			AddToGroup(uid, docRef.id);
+			AddToGroup(secondUserId, docRef.id);
+		});
+	}
+
+	function GetDisplayName(userId) {
+		return db.collection('Users').doc(userId).get().then(doc => {
+			return doc.data().displayName;
 		});
 	}
 </script>
 
 <main>
-	{#each Object.keys(groups) as groupId}
-		<button>Chat: {groupId}</button>
-	{/each}
+	<h1>bChat</h1>
+
+	{#if focusedGroupId}
+		<button on:click={() => { focusedGroupId = "" }}>
+			Go Back
+		</button>
+	{:else}
+		{#each Object.entries(groups) as [groupId, group]}
+			<button on:click={() => { focusedGroupId = groupId }}>
+				{Object.values(group.users)}
+			</button>
+		{/each}
+	{/if}
 </main>
 
 <style>
@@ -97,5 +134,9 @@
 	}
 	main {
 		padding: 10px;
+	}
+	button {
+		padding: 10px;
+		margin: 10px;
 	}
 </style>
