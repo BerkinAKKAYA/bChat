@@ -1,4 +1,6 @@
 <script>
+	import { toDate, formatDistanceToNow } from "date-fns";
+	import { tr } from 'date-fns/locale'
 	const uid = "0bayGCeRXFpwNSJAzW9T";
 	const db = firebase.firestore();
 
@@ -7,6 +9,7 @@
 	let groupSubscriptions = [];	// Chat subscriptions (call each to unsubscribe)
 	
 	let focusedGroupId = "";
+	let messageToSend = "";
 
 	InitializeSubscriptions();
 
@@ -35,6 +38,15 @@
 					const group = doc.data();
 					groups[groupId] = group;
 
+					const messages = groups[groupId].messages;
+					const orderedMessages = Object.keys(messages).sort().reduce(
+						(obj, key) => { 
+							obj[key] = messages[key]; 
+							return obj;
+						}, {}
+					);
+					groups[groupId].messages = orderedMessages;
+
 					// Convert userArray to userMap ([userId] to {userId: displayName})
 					const userArray = groups[groupId]["users"];
 					const userMap = {};
@@ -46,6 +58,7 @@
 							groups = groups;
 						});
 					}
+
 					groups[groupId]["users"] = userMap;
 				});
 			}
@@ -102,11 +115,57 @@
 			AddToGroup(secondUserId, docRef.id);
 		});
 	}
+	
+	function RelativeFormat(timestamp) {
+		const date = toDate(parseInt(timestamp));
+		const dist = formatDistanceToNow(date, { locale: tr }) + " önce";
+		const firstWord = dist.substr(0, dist.indexOf(" "));
 
-	function GetDisplayName(userId) {
-		return db.collection('Users').doc(userId).get().then(doc => {
-			return doc.data().displayName;
-		});
+		if (dist == "bir dakikadan az önce") {
+			return "şimdi";
+		}
+
+		if (firstWord == "yaklaşık") {
+			return dist.substr(dist.indexOf(" ") + 1);
+		} else {
+			return dist;
+		}
+	}
+	
+	function PromptToCreateGroup() {
+		const phone = parseInt(prompt("Telefon Numarası"));
+
+		CheckIfUserExists(phone).then(exists => {
+			if (exists) {
+				console.log("Create a new group with UID and", phone);
+			} else {
+				alert("Kişi henüz bChat hesabı oluşturmamış.");
+			}
+		})
+	}
+
+	function PromptToAddToGroup(groupId) {
+		const phone = parseInt(prompt("Telefon Numarası"));
+
+		CheckIfUserExists(phone).then(exists => {
+			if (exists) {
+				console.log("Add", phone, "to", groupId);
+			} else {
+				alert("Kişi henüz bChat hesabı oluşturmamış.");
+			}
+		})
+	}
+
+	function CheckIfUserExists(phone) {
+		return db.collection("Users").where("tel", "==", phone)
+			.get()
+			.then(snapshot => {
+				let exists = false;
+				snapshot.forEach(doc => {
+					if (doc.exists) { exists = true };
+				});
+				return exists;
+			});
 	}
 </script>
 
@@ -117,7 +176,20 @@
 		<button on:click={() => { focusedGroupId = "" }}>
 			Go Back
 		</button>
+		<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>
+			Kişi Ekle
+		</button>
+
+		{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
+			<p class:received={message.sentBy == uid}>
+				{RelativeFormat(sentAt)} =- {message.text}
+			</p>
+		{/each}
+
+		<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
+		<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
 	{:else}
+		<button on:click={PromptToCreateGroup}>Konuşma Başlat</button>
 		{#each Object.entries(groups) as [groupId, group]}
 			<button on:click={() => { focusedGroupId = groupId }}>
 				{Object.values(group.users)}
