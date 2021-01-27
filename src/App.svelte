@@ -132,40 +132,25 @@
 		}
 	}
 	
-	function PromptToCreateGroup() {
-		const phone = parseInt(prompt("Telefon Numarası"));
-
-		CheckIfUserExists(phone).then(exists => {
-			if (exists) {
-				console.log("Create a new group with UID and", phone);
-			} else {
-				alert("Kişi henüz bChat hesabı oluşturmamış.");
-			}
-		})
+	async function PromptToCreateGroup() {
+		const phone = await PromptPhoneNumber();
+		console.log(phone);
 	}
 
-	function PromptToAddToGroup(groupId) {
-		const phone = parseInt(prompt("Telefon Numarası"));
-
-		CheckIfUserExists(phone).then(exists => {
-			if (exists) {
-				console.log("Add", phone, "to", groupId);
-			} else {
-				alert("Kişi henüz bChat hesabı oluşturmamış.");
-			}
-		})
+	async function PromptToAddToGroup(groupId) {
+		const phone = await PromptPhoneNumber();
+		console.log(phone);
 	}
 
-	function CheckIfUserExists(phone) {
-		return db.collection("Users").where("tel", "==", phone)
-			.get()
-			.then(snapshot => {
-				let exists = false;
-				snapshot.forEach(doc => {
-					if (doc.exists) { exists = true };
-				});
-				return exists;
-			});
+	// Contacts API will be used here...
+	async function PromptPhoneNumber() {
+		const phone = parseInt(prompt("Telefon Numarası"));
+		const snapshot = await db.collection("Users").where("tel", "==", phone).get();
+		let exists = false
+		snapshot.forEach(doc => {
+			if (doc.exists) { exists = true }
+		})
+		return exists ? phone : null;
 	}
 </script>
 
