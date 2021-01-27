@@ -97,6 +97,8 @@
 	}
 
 	function LeaveGroup(groupId) {
+		if (!confirm("Emin misiniz?")) { return }
+
 		const ref = db.collection('Users').doc(uid);
 
 		ref.get().then(doc => {
@@ -104,6 +106,8 @@
 			data.groups = data.groups.filter(x => x != groupId);
 			ref.set(data);
 		});
+
+		focusedGroupId = "";
 	}
 
 	function CreateGroup(secondUserId) {
@@ -133,24 +137,59 @@
 	}
 	
 	async function PromptToCreateGroup() {
-		const phone = await PromptPhoneNumber();
-		console.log(phone);
+		const phone = PromptPhoneNumber();
+		const uidToAdd = await GetUIDOfPhone(phone);
+
+		if (!uidToAdd) {
+			return alert("Kullanıcı henüz bChat hesabı oluşturmamış.");
+		}
+		if (uidToAdd == uid) {
+			return alert("Kendinizle sohbet başlatamazsınız.");
+		}
+
+		CreateGroup(uidToAdd);
 	}
 
 	async function PromptToAddToGroup(groupId) {
-		const phone = await PromptPhoneNumber();
-		console.log(phone);
+		const phone = PromptPhoneNumber();
+		const uidToAdd = await GetUIDOfPhone(phone);
+
+		if (!uidToAdd) {
+			return alert("Kullanıcı henüz bChat hesabı oluşturmamış.");
+		}
+
+		const usersOfGroup = Object.keys(groups[groupId].users);
+		const alreadyInGroup = usersOfGroup.includes(uidToAdd);
+
+		if (alreadyInGroup) {
+			return alert("Kullanıcı zaten grupta.");
+		}
+
+		AddToGroup(uidToAdd, groupId);
+	}
+
+	async function GetUIDOfPhone(phone) {
+		const snapshot = await db.collection("Users").where("tel", "==", phone).get();
+		let docId = null;
+		snapshot.forEach(doc => {
+			if (doc.exists) { docId = doc.id; }
+		})
+		return docId;
 	}
 
 	// Contacts API will be used here...
-	async function PromptPhoneNumber() {
-		const phone = parseInt(prompt("Telefon Numarası"));
-		const snapshot = await db.collection("Users").where("tel", "==", phone).get();
-		let exists = false
-		snapshot.forEach(doc => {
-			if (doc.exists) { exists = true }
-		})
-		return exists ? phone : null;
+	function PromptPhoneNumber() {
+		let phone = prompt("Telefon Numarası");
+
+		// Remove Whitespace
+		phone = phone.replace(/\s/g,'');
+
+		// Remove country section
+		if (phone.startsWith("+")) {
+			phone = phone.substring(3);
+		}
+
+		return parseInt(phone);
 	}
 </script>
 
@@ -164,6 +203,11 @@
 		<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>
 			Kişi Ekle
 		</button>
+		<button on:click={() => { LeaveGroup(focusedGroupId) }}>
+			Gruptan Çık
+		</button>
+
+		<hr />
 
 		{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
 			<p class:received={message.sentBy == uid}>
