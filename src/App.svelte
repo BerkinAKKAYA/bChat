@@ -1,8 +1,13 @@
 <script>
 	import { toDate, formatDistanceToNow } from "date-fns";
 	import { tr } from 'date-fns/locale'
-	const uid = "0bayGCeRXFpwNSJAzW9T";
+	import { onMount } from 'svelte';
+
+	let uid = ""; // Example UID: 0bayGCeRXFpwNSJAzW9T
 	const db = firebase.firestore();
+
+	const auth = firebase.auth();
+	auth.languageCode = 'tr';
 
 	let groups = {};				// History of chats { groupId: { messages: { sentAt: { sendBy, text } } } }
 	let userSubscription = null;	// Group subscriptions (call to unsubscribe)
@@ -11,7 +16,10 @@
 	let focusedGroupId = "";
 	let messageToSend = "";
 
-	InitializeSubscriptions();
+	let phoneInput = "";
+	let codeInput = "";
+	let phoneSent = false;
+	let verificationNeeded = false;
 
 	// When URL changes, update focusedGroupId
 	window.addEventListener("hashchange", e => {
@@ -20,7 +28,72 @@
 		focusedGroupId = groupExists ? hash : "";
 	})
 
+	onMount(() => {
+		window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('signIn', {
+			'size': 'invisible',
+			'callback': response => {
+				console.log("Recaptcha Verifier Response: ", response);
+			}
+		});
+	});
+
+    auth.onAuthStateChanged(user => {
+		if (user) {
+			const usersRef = db.collection("Users");
+			usersRef.doc(user.uid).get().then(doc => {
+				if (doc.exists) {
+					uid = user.uid;
+					InitializeSubscriptions();
+				} else {
+					const data = {
+						displayName: "",
+						groups: [],
+						tel: ""
+					};
+					data.displayName = prompt("Ad & Soyad");
+					data.tel = user.phoneNumber.replace("+90", "");
+
+					// Add the 'data' to the firebase
+					usersRef.doc(user.uid).set(data).then(() => {
+						uid = user.uid;
+						InitializeSubscriptions();
+					});
+				}
+			});
+		} else {
+			uid = "";
+		}
+	});
+
+	function SignIn() {
+		const phoneNumber = "+90" + phoneInput.split(" ").join("");
+		phoneSent = true;
+
+		auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+			.then(confirmationResult => {
+				verificationNeeded = true;
+				window.confirmationResult = confirmationResult;
+			}).catch(error => {
+				console.error("signInWithPhoneNumber", error);
+			});
+	}
+
+	function VerifySMS() {
+		const code = codeInput.split(" ").join("");
+
+		window.confirmationResult.confirm(code).then(result => {
+			console.log("Logged In!", result);
+		}).catch(error => {
+			console.error(error);
+		});
+	}
+
+	function SignOut() {
+		auth.signOut();
+	}
+
 	// Subscribe to updates on the chats (new messages, new users etc.)
+	// Call this when the user logged in
 	function InitializeSubscriptions() {
 		if (!uid) {
 			return alert("No user logged in!");
@@ -113,8 +186,14 @@
 		if (!confirm("Emin misiniz?")) { return }
 
 		// Remove the 'groupId' from the user's 'groups' array
-		db.collection('Users').doc(uid).get().then(doc => {
+		const ref = db.collection('Users').doc(uid);
+		ref.get().then(doc => {
 			const data = doc.data();
+
+			if (groups[groupId].users.length <= 2) {
+				console.log("Delete group! (and remove it from it's only user)");
+			}
+
 			data.groups = data.groups.filter(x => x != groupId);
 			ref.set(data);
 		});
@@ -219,33 +298,48 @@
 <main>
 	<h1>bChat</h1>
 
-	{#if focusedGroupId}
-		<a href='/'>Go Back</a>
-		<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>Kişi Ekle</button>
-		<button on:click={() => { LeaveGroup(focusedGroupId) }}>Gruptan Çık</button>
+	{#if uid}
+		{#if focusedGroupId}
+			<a href='/'>Go Back</a>
+			<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>Kişi Ekle</button>
+			<button on:click={() => { LeaveGroup(focusedGroupId) }}>Gruptan Çık</button>
 
-		<hr />
+			<hr />
 
-		{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
-			<p class:received={message.sentBy == uid}>
-				{RelativeFormat(sentAt)} =- {message.text}
-			</p>
-		{/each}
-
-		<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
-		<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
-	{:else}
-		<button on:click={PromptToCreateGroup}>Konuşma Başlat</button>
-
-		<hr />
-
-		<div id="groups">
-			{#each Object.entries(groups) as [groupId, group]}
-				<a href={`#${groupId}`} class="linkToGroup">
-					{Object.values(group.users)}
-				</a>
+			{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
+				<p class:received={message.sentBy == uid}>
+					{RelativeFormat(sentAt)} =- {message.text}
+				</p>
 			{/each}
-		</div>
+
+			<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
+			<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
+		{:else}
+			<button on:click={PromptToCreateGroup}>Konuşma Başlat</button>
+			<button on:click={SignOut}>Çıkış Yap</button>
+
+			<hr />
+
+			<div id="groups">
+				{#each Object.entries(groups) as [groupId, group]}
+					<a href={`#${groupId}`} class="linkToGroup">
+						{Object.values(group.users)}
+					</a>
+				{/each}
+			</div>
+		{/if}
+	{:else}
+		{#if phoneSent && !verificationNeeded}
+			Loading...
+		{/if}
+
+		{#if verificationNeeded}
+			<input type="text" bind:value={codeInput} placeholder="xxx xxx" />
+			<button id="verifySms" on:click={VerifySMS}>Verify</button>
+		{:else}
+			<input type="text" bind:value={phoneInput} placeholder="xxx xxx xx xx" />
+			<button id="signIn" on:click={SignIn}>Sign In</button>
+		{/if}
 	{/if}
 </main>
 

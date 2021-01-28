@@ -6,3 +6,4 @@ PWA WhatsApp Clone Built by Berkin AKKAYA with Svelte
 
   -  Add SMS Authentication
   -  Implement Contact API
+  -  Delete the Group When Only One User Left
