@@ -13,6 +13,14 @@
 
 	InitializeSubscriptions();
 
+	window.addEventListener("hashchange", function(e) {
+		// TODO: If hash does not exists, go back home.
+		const hash = window.location.hash.replace("#", "");
+		focusedGroupId = hash || "";
+
+		console.log(window.location);
+	})
+
 	function InitializeSubscriptions() {
 		if (!uid) {
 			return alert("No user logged in!");
@@ -197,9 +205,9 @@
 	<h1>bChat</h1>
 
 	{#if focusedGroupId}
-		<button on:click={() => { focusedGroupId = "" }}>
+		<a href='/'>
 			Go Back
-		</button>
+		</a>
 		<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>
 			Kişi Ekle
 		</button>
@@ -220,9 +228,9 @@
 	{:else}
 		<button on:click={PromptToCreateGroup}>Konuşma Başlat</button>
 		{#each Object.entries(groups) as [groupId, group]}
-			<button on:click={() => { focusedGroupId = groupId }}>
+			<a href={`#${groupId}`}>
 				{Object.values(group.users)}
-			</button>
+			</a>
 		{/each}
 	{/if}
 </main>
