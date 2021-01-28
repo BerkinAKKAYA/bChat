@@ -74,20 +74,31 @@
 	});
 
 	async function SignIn() {
-		// User Sent The Phone Number, Show Loading Screen
-		const phoneNumber = "+90" + phoneInput.split(" ").join("");
-		phoneSent = true;
+		let result = null;
 
-		// Server Received The Phone Number, Wait For The SMS Code
-		const result = await auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
-		verificationNeeded = true;
+		try {
+			// User Sent The Phone Number, Show Loading Screen
+			const phoneNumber = "+90" + phoneInput.split(" ").join("");
+			phoneSent = true;
+
+			// Server Received The Phone Number, Wait For The SMS Code
+			result = await auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier);
+			verificationNeeded = true;
+		} catch (err) {
+			console.log(err);
+		}
 
 		window.confirmationResult = result;
 	}
 
 	function ConfirmSMS() {
 		const code = codeInput.split(" ").join("");
-		window.confirmationResult.confirm(code);
+		if (!window.confirmationResult) {
+			return console.log("No window.confirmationResult! Error in signInWithPhoneNumber()");
+		}
+		window.confirmationResult.confirm(code)
+			.then(() => { console.log("SMS Confirmed") })
+			.catch(err => { console.log(err) })
 	}
 
 	// Subscribe to updates on the chats (new messages, new users etc.)
