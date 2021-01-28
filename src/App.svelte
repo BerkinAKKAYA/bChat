@@ -21,6 +21,9 @@
 	let phoneSent = false;
 	let verificationNeeded = false;
 
+	const usersCollection = db.collection("Users");
+	const groupsCollection = db.collection("Groups");
+
 	// When URL changes, update focusedGroupId
 	window.addEventListener("hashchange", e => {
 		const hash = window.location.hash.replace("#", "");
@@ -37,67 +40,63 @@
 		});
 	});
 
+	// On Sign In / Out
     auth.onAuthStateChanged(user => {
-		if (user) {
-			const usersRef = db.collection("Users");
-			usersRef.doc(user.uid).get().then(doc => {
-				if (doc.exists) {
+		// Just Signed Out
+		if (!user) {
+			uid = "";
+			return;
+		}
+
+		// Sign In
+		usersCollection.doc(user.uid).get().then(doc => {
+			if (doc.exists) {
+				// User Already Have An Account, Sign In
+				uid = user.uid;
+				InitializeSubscriptions();
+			} else {
+				// Create An Account & Sign In
+				const data = {
+					displayName: "",
+					groups: [],
+					tel: 0
+				};
+				data.displayName = prompt("Ad & Soyad");
+				data.tel = parseInt(user.phoneNumber.replace("+90", ""));
+
+				// Add the 'data' to the firebase
+				usersCollection.doc(user.uid).set(data).then(() => {
 					uid = user.uid;
 					InitializeSubscriptions();
-				} else {
-					const data = {
-						displayName: "",
-						groups: [],
-						tel: ""
-					};
-					data.displayName = prompt("Ad & Soyad");
-					data.tel = user.phoneNumber.replace("+90", "");
-
-					// Add the 'data' to the firebase
-					usersRef.doc(user.uid).set(data).then(() => {
-						uid = user.uid;
-						InitializeSubscriptions();
-					});
-				}
-			});
-		} else {
-			uid = "";
-		}
+				});
+			}
+		});
 	});
 
-	function SignIn() {
+	async function SignIn() {
+		// User Sent The Phone Number, Show Loading Screen
 		const phoneNumber = "+90" + phoneInput.split(" ").join("");
 		phoneSent = true;
 
-		auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
-			.then(confirmationResult => {
-				verificationNeeded = true;
-				window.confirmationResult = confirmationResult;
-			}).catch(error => {
-				console.error("signInWithPhoneNumber", error);
-			});
+		// Server Received The Phone Number, Wait For The SMS Code
+		const result = await auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+		verificationNeeded = true;
+
+		window.confirmationResult = result;
 	}
 
-	function VerifySMS() {
+	function ConfirmSMS() {
 		const code = codeInput.split(" ").join("");
-
-		window.confirmationResult.confirm(code).then(result => {
-			console.log("Logged In!", result);
-		}).catch(error => {
-			console.error(error);
-		});
+		window.confirmationResult.confirm(code);
 	}
 
 	// Subscribe to updates on the chats (new messages, new users etc.)
 	// Call this when the user logged in
 	function InitializeSubscriptions() {
-		if (!uid) {
-			return alert("No user logged in!");
-		}
+		if (!uid) { return alert("No user logged in!"); }
 
+		// Unsubscribe if already subscribed
 		userSubscription && userSubscription();
-
-		const usersCollection = db.collection("Users");
 
 		// Update group subscriptions everytime a new group added or removed.
 		userSubscription = usersCollection.doc(uid).onSnapshot(doc => {
@@ -111,7 +110,7 @@
 
 			// Update groups array everytime a group gets mutated (a new message arrives)
 			for (const groupId of user.groups) {
-				db.collection("Groups").doc(groupId).onSnapshot(doc => {
+				groupsCollection.doc(groupId).onSnapshot(doc => {
 					if (!doc.exists) { return console.log(groupId, "does not exists!") }
 
 					const group = doc.data();
@@ -145,7 +144,7 @@
 	}
 
 	function SendMessage(groupId, message) {
-		const ref = db.collection('Groups').doc(groupId);
+		const ref = groupsCollection.doc(groupId);
 
 		// Strucuture of the generated data
 		// data.messages = { timestamp: { uid, message }, ... }
@@ -162,8 +161,8 @@
 	}
 
 	function AddToGroup(userId, groupId) {
-		const usersDoc = db.collection('Users').doc(userId);
-		const groupDoc = db.collection('Groups').doc(groupId);
+		const usersDoc = usersCollection.doc(userId);
+		const groupDoc = groupsCollection.doc(groupId);
 
 		// Add group to the user
 		usersDoc.get().then(doc => {
@@ -180,49 +179,43 @@
 		});
 	}
 
-	function LeaveGroup(groupId) {
+	async function LeaveGroup(groupId) {
 		if (!confirm("Emin misiniz?")) { return }
 
-		// Remove the 'groupId' from the user's 'groups' array
-		const usersRef = db.collection('Users');
-		usersRef.doc(uid).get().then(doc => {
-			const data = doc.data();
+		const user = await usersCollection.doc(uid).get();
+		const data = doc.data();
 
-			// Delete group if only one user left!
-			if (Object.keys(groups[groupId].users).length <= 2) {
-				// Delete Group
-				db.collection("Groups").doc(groupId).delete()
-					.then(() => { console.log("Group Deleted Successfully!") })
-					.catch(err => { console.error("Group Could Not Be Deleted!", error) });
+		if (Object.keys(groups[groupId].users).length <= 2) {
+			// Delete Group
+			groupsCollection.doc(groupId).delete()
+				.then(() => { console.log("Group Deleted Successfully!") })
+				.catch(err => { console.error("Group Could Not Be Deleted!", error) });
 
-				// Remove Group From It's Users
-				const usersToUpdate = Object.keys(groups[groupId].users);
+			// Remove Group From It's Users
+			const usersToUpdate = Object.keys(groups[groupId].users);
 
-				for (const userId of usersToUpdate) {
-					const ref = usersRef.doc(userId);
-					ref.get().then(doc => {
-						const data = doc.data();
-						data.groups = data.groups.filter(x => x != groupId);
-						ref.set(data);
-					});
-				}
+			for (const userId of usersToUpdate) {
+				const ref = usersCollection.doc(userId);
+				ref.get().then(doc => {
+					const data = doc.data();
+					data.groups = data.groups.filter(x => x != groupId);
+					ref.set(data);
+				});
 			}
+		}
 
-			usersRef.doc(uid).set(data);
-		});
+		usersCollection.doc(uid).set(data);
 
 		// Go back home
 		focusedGroupId = "";
 	}
 
 	function CreateGroup(secondUserId) {
-		const ref = db.collection('Groups');
-
 		// Empty Group Data Structure (Only initialize 'users')
 		const data = { messages: {}, users: [ uid, secondUserId ] };
 
 		// Add the 'data' to the firebase
-		ref.add(data).then(docRef => {
+		groupsCollection.add(data).then(docRef => {
 			// Add yourself and the secondUser to the group
 			AddToGroup(uid, docRef.id);
 			AddToGroup(secondUserId, docRef.id);
@@ -283,13 +276,15 @@
 	}
 
 	// Gets a phone number and returns UID of related number.
-	async function GetUIDOfPhone(phone) {
-		const snapshot = await db.collection("Users").where("tel", "==", phone).get();
-		let docId = null;
-		snapshot.forEach(doc => {
-			if (doc.exists) { docId = doc.id; }
-		})
-		return docId;
+	function GetUIDOfPhone(phone) {
+		return db.collection("Users").where("tel", "==", phone).get().then(snapshot => {
+			console.log(snapshot)
+			let docId = null;
+			snapshot.forEach(doc => {
+				if (doc.exists) { docId = doc.id; }
+			})
+			return docId;
+		});
 	}
 
 	// Contacts API will be used here...
@@ -348,7 +343,7 @@
 
 		{#if verificationNeeded}
 			<input type="text" bind:value={codeInput} placeholder="xxx xxx" />
-			<button id="verifySms" on:click={VerifySMS}>Verify</button>
+			<button id="verifySms" on:click={ConfirmSMS}>Verify</button>
 		{:else}
 			<input type="text" bind:value={phoneInput} placeholder="xxx xxx xx xx" />
 			<button id="signIn" on:click={SignIn}>Sign In</button>
