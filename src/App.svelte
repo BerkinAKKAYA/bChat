@@ -88,10 +88,6 @@
 		});
 	}
 
-	function SignOut() {
-		auth.signOut();
-	}
-
 	// Subscribe to updates on the chats (new messages, new users etc.)
 	// Call this when the user logged in
 	function InitializeSubscriptions() {
@@ -116,6 +112,8 @@
 			// Update groups array everytime a group gets mutated (a new message arrives)
 			for (const groupId of user.groups) {
 				db.collection("Groups").doc(groupId).onSnapshot(doc => {
+					if (!doc.exists) { return console.log(groupId, "does not exists!") }
+
 					const group = doc.data();
 					groups[groupId] = group;
 
@@ -186,16 +184,31 @@
 		if (!confirm("Emin misiniz?")) { return }
 
 		// Remove the 'groupId' from the user's 'groups' array
-		const ref = db.collection('Users').doc(uid);
-		ref.get().then(doc => {
+		const usersRef = db.collection('Users');
+		usersRef.doc(uid).get().then(doc => {
 			const data = doc.data();
 
-			if (groups[groupId].users.length <= 2) {
-				console.log("Delete group! (and remove it from it's only user)");
+			// Delete group if only one user left!
+			if (Object.keys(groups[groupId].users).length <= 2) {
+				// Delete Group
+				db.collection("Groups").doc(groupId).delete()
+					.then(() => { console.log("Group Deleted Successfully!") })
+					.catch(err => { console.error("Group Could Not Be Deleted!", error) });
+
+				// Remove Group From It's Users
+				const usersToUpdate = Object.keys(groups[groupId].users);
+
+				for (const userId of usersToUpdate) {
+					const ref = usersRef.doc(userId);
+					ref.get().then(doc => {
+						const data = doc.data();
+						data.groups = data.groups.filter(x => x != groupId);
+						ref.set(data);
+					});
+				}
 			}
 
-			data.groups = data.groups.filter(x => x != groupId);
-			ref.set(data);
+			usersRef.doc(uid).set(data);
 		});
 
 		// Go back home
@@ -300,7 +313,7 @@
 
 	{#if uid}
 		{#if focusedGroupId}
-			<a href='/'>Go Back</a>
+			<a href='/#'>Go Back</a>
 			<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>Kişi Ekle</button>
 			<button on:click={() => { LeaveGroup(focusedGroupId) }}>Gruptan Çık</button>
 
@@ -316,7 +329,7 @@
 			<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
 		{:else}
 			<button on:click={PromptToCreateGroup}>Konuşma Başlat</button>
-			<button on:click={SignOut}>Çıkış Yap</button>
+			<button on:click={() => {auth.signOut()}}>Çıkış Yap</button>
 
 			<hr />
 
