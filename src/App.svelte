@@ -13,12 +13,15 @@
 
 	InitializeSubscriptions();
 
-	window.addEventListener("hashchange", function(e) {
+	window.addEventListener("hashchange", e => {
 		// TODO: If hash does not exists, go back home.
 		const hash = window.location.hash.replace("#", "");
-		focusedGroupId = hash || "";
 
-		console.log(window.location);
+		if (Object.keys(groups).includes(hash)) {
+			focusedGroupId = hash;
+		} else {
+			focusedGroupId = "";
+		}
 	})
 
 	function InitializeSubscriptions() {
@@ -205,15 +208,9 @@
 	<h1>bChat</h1>
 
 	{#if focusedGroupId}
-		<a href='/'>
-			Go Back
-		</a>
-		<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>
-			Kişi Ekle
-		</button>
-		<button on:click={() => { LeaveGroup(focusedGroupId) }}>
-			Gruptan Çık
-		</button>
+		<a href='/'>Go Back</a>
+		<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>Kişi Ekle</button>
+		<button on:click={() => { LeaveGroup(focusedGroupId) }}>Gruptan Çık</button>
 
 		<hr />
 
@@ -227,11 +224,16 @@
 		<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
 	{:else}
 		<button on:click={PromptToCreateGroup}>Konuşma Başlat</button>
-		{#each Object.entries(groups) as [groupId, group]}
-			<a href={`#${groupId}`}>
-				{Object.values(group.users)}
-			</a>
-		{/each}
+
+		<hr />
+
+		<div id="groups">
+			{#each Object.entries(groups) as [groupId, group]}
+				<a href={`#${groupId}`} class="linkToGroup">
+					{Object.values(group.users)}
+				</a>
+			{/each}
+		</div>
 	{/if}
 </main>
 
@@ -240,6 +242,7 @@
 		margin: 0;
 		padding: 0;
 		box-sizing: border-box;
+		text-decoration: none;
 	}
 	main {
 		padding: 10px;
@@ -247,5 +250,15 @@
 	button {
 		padding: 10px;
 		margin: 10px;
+	}
+	#groups {
+		margin: 10px;
+	}
+	.linkToGroup {
+		padding: 10px;
+		background: #eee;
+		color: #000;
+		display: block;
+		margin: 10px 0;
 	}
 </style>
