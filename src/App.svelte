@@ -13,17 +13,14 @@
 
 	InitializeSubscriptions();
 
+	// When URL changes, update focusedGroupId
 	window.addEventListener("hashchange", e => {
-		// TODO: If hash does not exists, go back home.
 		const hash = window.location.hash.replace("#", "");
-
-		if (Object.keys(groups).includes(hash)) {
-			focusedGroupId = hash;
-		} else {
-			focusedGroupId = "";
-		}
+		const groupExists = Object.keys(groups).includes(hash)
+		focusedGroupId = groupExists ? hash : "";
 	})
 
+	// Subscribe to updates on the chats (new messages, new users etc.)
 	function InitializeSubscriptions() {
 		if (!uid) {
 			return alert("No user logged in!");
@@ -78,13 +75,18 @@
 
 	function SendMessage(groupId, message) {
 		const ref = db.collection('Groups').doc(groupId);
-		const sentAt = Date.now();
 
+		// Strucuture of the generated data
+		// data.messages = { timestamp: { uid, message }, ... }
+
+		// Generate data
+		const sentAt = Date.now();
 		const data = { messages: {} };
 		data["messages"][sentAt] = {};
 		data["messages"][sentAt]["sentBy"] = uid;
 		data["messages"][sentAt]["text"] = message;
 
+		// Send the generated data to the firebase
 		ref.set(data, { merge: true });
 	}
 
@@ -110,27 +112,32 @@
 	function LeaveGroup(groupId) {
 		if (!confirm("Emin misiniz?")) { return }
 
-		const ref = db.collection('Users').doc(uid);
-
-		ref.get().then(doc => {
+		// Remove the 'groupId' from the user's 'groups' array
+		db.collection('Users').doc(uid).get().then(doc => {
 			const data = doc.data();
 			data.groups = data.groups.filter(x => x != groupId);
 			ref.set(data);
 		});
 
+		// Go back home
 		focusedGroupId = "";
 	}
 
 	function CreateGroup(secondUserId) {
 		const ref = db.collection('Groups');
+
+		// Empty Group Data Structure (Only initialize 'users')
 		const data = { messages: {}, users: [ uid, secondUserId ] };
 
+		// Add the 'data' to the firebase
 		ref.add(data).then(docRef => {
+			// Add yourself and the secondUser to the group
 			AddToGroup(uid, docRef.id);
 			AddToGroup(secondUserId, docRef.id);
 		});
 	}
 	
+	// Convert Date.now() to Turkish relative time (... ago)
 	function RelativeFormat(timestamp) {
 		const date = toDate(parseInt(timestamp));
 		const dist = formatDistanceToNow(date, { locale: tr }) + " önce";
@@ -151,9 +158,12 @@
 		const phone = PromptPhoneNumber();
 		const uidToAdd = await GetUIDOfPhone(phone);
 
+		// Given UID does not exists...
 		if (!uidToAdd) {
 			return alert("Kullanıcı henüz bChat hesabı oluşturmamış.");
 		}
+
+		// Given UID belogs to the logged in user...
 		if (uidToAdd == uid) {
 			return alert("Kendinizle sohbet başlatamazsınız.");
 		}
@@ -165,6 +175,7 @@
 		const phone = PromptPhoneNumber();
 		const uidToAdd = await GetUIDOfPhone(phone);
 
+		// Given UID does not exists...
 		if (!uidToAdd) {
 			return alert("Kullanıcı henüz bChat hesabı oluşturmamış.");
 		}
@@ -179,6 +190,7 @@
 		AddToGroup(uidToAdd, groupId);
 	}
 
+	// Gets a phone number and returns UID of related number.
 	async function GetUIDOfPhone(phone) {
 		const snapshot = await db.collection("Users").where("tel", "==", phone).get();
 		let docId = null;
