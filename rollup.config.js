@@ -34,7 +34,7 @@ export default {
 		sourcemap: !production,
 		format: 'iife',
 		name: 'app',
-		file: 'docs/build/bundle.js'
+		file: 'public/build/bundle.js'
 	},
 	plugins: [
 		svelte({ compilerOptions: { dev: !production } }),
@@ -43,7 +43,7 @@ export default {
 		commonjs(),
 
 		!production && serve(),
-		!production && livereload('docs'),
+		!production && livereload('public'),
 		production && terser() // Minify
 	],
 	watch: {
