@@ -129,32 +129,37 @@
 
 					const group = doc.data();
 					groups[groupId] = group;
-
-					const messages = groups[groupId].messages;
-					const orderedMessages = Object.keys(messages).sort().reduce(
-						(obj, key) => { 
-							obj[key] = messages[key]; 
-							return obj;
-						}, {}
-					);
-					groups[groupId].messages = orderedMessages;
-
-					// Convert userArray to userMap ([userId] to {userId: displayName})
-					const userArray = groups[groupId]["users"];
-					const userMap = {};
-					for (const userId of userArray) {
-						usersCollection.doc(userId).get().then(doc => {
-							userMap[userId] = doc.data().displayName;
-
-							// Mutate groups array so Svelte will re-render.
-							groups = groups;
-						});
-					}
-
-					groups[groupId]["users"] = userMap;
+					SortMessagesOf(groupId);
+					LinkNamesWithIDs(groupId);
 				});
 			}
 		});
+	}
+
+	function SortMessagesOf(groupId) {
+		const messages = groups[groupId].messages;
+		const orderedMessages = Object.keys(messages).sort().reduce(
+			(obj, key) => { 
+				obj[key] = messages[key]; 
+				return obj;
+			}, {}
+		);
+		groups[groupId].messages = orderedMessages;
+	}
+
+	// Convert [ userId ] to { userId: displayName }
+	function LinkNamesWithIDs(groupId) {
+		const userArray = groups[groupId]["users"];
+		const userMap = {};
+		for (const userId of userArray) {
+			usersCollection.doc(userId).get().then(doc => {
+				userMap[userId] = doc.data().displayName;
+
+				// Mutate groups array so Svelte will re-render.
+				groups = groups;
+			});
+		}
+		groups[groupId]["users"] = userMap;
 	}
 
 	function SendMessage(groupId, message) {
