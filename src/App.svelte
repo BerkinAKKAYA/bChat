@@ -172,6 +172,8 @@
 
 		// Send the generated data to the firebase
 		ref.set(data, { merge: true });
+
+		messageToSend = "";
 	}
 
 	function AddToGroup(userId, groupId) {
