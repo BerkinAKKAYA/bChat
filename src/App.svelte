@@ -131,6 +131,11 @@
 					groups[groupId] = group;
 					SortMessagesOf(groupId);
 					LinkNamesWithIDs(groupId);
+
+					// Vibrate if received message is not from the focused group
+					if (groupId != focusedGroupId) {
+						window.navigator.vibrate(200);
+					}
 				});
 			}
 		});
