@@ -3,7 +3,7 @@
 	import { tr } from 'date-fns/locale'
 	import { onMount } from 'svelte';
 
-	let uid = ""; // Example UID: 0bayGCeRXFpwNSJAzW9T
+	let uid = "";
 	const db = firebase.firestore();
 
 	const auth = firebase.auth();
@@ -108,6 +108,9 @@
 
 		// Unsubscribe if already subscribed
 		userSubscription && userSubscription();
+
+		// Go To Home Page
+		window.location.hash = "#";
 
 		// Update group subscriptions everytime a new group added or removed.
 		userSubscription = usersCollection.doc(uid).onSnapshot(doc => {
