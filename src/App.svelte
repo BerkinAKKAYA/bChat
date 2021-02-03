@@ -1,14 +1,9 @@
 <script>
 	import Home from './Home.svelte';
-	import Login from './Login.svelte';
 	import Chat from './Chat.svelte';
+	import Login from './Login.svelte';
 
 	let uid = "";
-	const db = firebase.firestore();
-
-	const auth = firebase.auth();
-	auth.languageCode = 'tr';
-
 	let groups = {};				// History of chats { groupId: { messages: { sentAt: { sendBy, text } } } }
 	let userSubscription = null;	// Group subscriptions (call to unsubscribe)
 	let groupSubscriptions = [];	// Chat subscriptions (call each to unsubscribe)
@@ -160,23 +155,18 @@
 				bind:focusedGroupId
 				bind:groups
 				{ uid }
-				{ usersCollection }
-				{ groupsCollection }
 				{ PromptPhoneNumber }
 				{ GetUIDOfPhone }
 			/>
 		{:else}
 			<Home
 				bind:groups
-				{ auth }
 				{ uid }
-				{ usersCollection }
-				{ groupsCollection }
 				{ PromptPhoneNumber }
 				{ GetUIDOfPhone }
 			/>
 		{/if}
 	{:else}
-		<Login bind:uid { auth } />
+		<Login bind:uid />
 	{/if}
 </main>

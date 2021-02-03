@@ -1,17 +1,13 @@
 <script>
 	export let uid;
-	export let auth;
 
 	export let groups;
-	export let usersCollection;
-	export let groupsCollection;
-
 	export let PromptPhoneNumber;
 	export let GetUIDOfPhone;
 
 	function AddToGroup(userId, groupId) {
-		const usersDoc = usersCollection.doc(userId);
-		const groupDoc = groupsCollection.doc(groupId);
+		const usersDoc = db.collection("Users").doc(userId);
+		const groupDoc = db.collection("Groups").doc(groupId);
 
 		// Add group to the user
 		usersDoc.get().then(doc => {

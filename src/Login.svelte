@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 
 	export let uid;
-	export let auth;
 
 	let phoneInput = "";
 	let codeInput = "";

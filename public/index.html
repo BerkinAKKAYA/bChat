@@ -26,6 +26,10 @@
 		};
 		firebase.initializeApp(firebaseConfig);
 		firebase.analytics();
+
+		const db = firebase.firestore();
+		const auth = firebase.auth();
+		auth.languageCode = 'tr';
 	</script>
 
 	<script defer src='build/bundle.js'></script>

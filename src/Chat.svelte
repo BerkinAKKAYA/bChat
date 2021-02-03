@@ -5,13 +5,13 @@
 	// Variables
 	export let uid;
 	export let groups;
-	export let usersCollection;
-	export let groupsCollection;
 	export let focusedGroupId;
 
 	// Functions
 	export let PromptPhoneNumber;
 	export let GetUIDOfPhone;
+
+	const groupsCollection = db.collection("Groups");
 
 	let messageToSend = "";
 
@@ -37,6 +37,7 @@
 	async function LeaveGroup(groupId) {
 		if (!confirm("Emin misiniz?")) { return }
 
+		const usersCollection = db.collection("Users");
 		const user = await usersCollection.doc(uid).get();
 		const data = user.data();
 
