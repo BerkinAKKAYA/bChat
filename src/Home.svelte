@@ -87,8 +87,8 @@
 	#newChat {
 		width: 48px;
 		height: 48px;
-		right: 48px;
-		bottom: 48px;
+		right: 36px;
+		bottom: 36px;
 
 		background: var(--primary-color);
 		border-radius: 100%;

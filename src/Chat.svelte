@@ -15,6 +15,17 @@
 
 	let messageToSend = "";
 
+	$: {
+		// Scroll to bottom automatically
+		if (focusedGroupId) {
+			// setTimeout is to wait for mount
+			setTimeout(() => {
+				const element = document.getElementById("messages");
+				element.scrollIntoView(false);
+			}, 0);
+		}
+	}
+
 	async function PromptToAddToGroup(groupId) {
 		const phone = PromptPhoneNumber();
 		const uidToAdd = await GetUIDOfPhone(phone);
@@ -84,6 +95,8 @@
 	}
 
 	function SendMessage(groupId, message) {
+		if (!messageToSend) { return }
+
 		const ref = groupsCollection.doc(groupId);
 
 		// Strucuture of the generated data
@@ -110,14 +123,18 @@
 </header>
 
 <main>
-	{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
-		<p class:received={message.sentBy == uid}>
-			{RelativeFormat(sentAt)} =- {message.text}
-		</p>
-	{/each}
+	<div id="messages">
+		{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
+			<p class="message" class:received={message.sentBy == uid}>
+				{RelativeFormat(sentAt)} ||| {message.text}
+			</p>
+		{/each}
+	</div>
 
-	<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
-	<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
+	<div id="sendMessage">
+		<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
+		<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>G</button>
+	</div>
 </main>
 
 <style>
@@ -136,5 +153,37 @@
 	}
 	header *:hover {
 		opacity: 1;
+	}
+	
+	main {
+		max-height: calc(100vh - 170px);
+	}
+
+	.message {
+		border: 1px solid #eee;
+		padding: 20px;
+		margin: 2px;
+	}
+
+	#sendMessage {
+		height: 50px;
+		display: grid;
+		grid-template-columns: 1fr 50px;
+		gap: 20px;
+		
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+		left: 10px;
+	}
+	#sendMessage input {
+		border: 1px solid #ddd;
+		padding: 0 15px;
+	}
+	#sendMessage button {
+		border-radius: 100%;
+		background-color: var(--primary-color);
+		color: white;
+		cursor: pointer;
 	}
 </style>

@@ -146,7 +146,7 @@
 	}
 </script>
 
-<main>
+<div id="app">
 	{#if uid}
 		{#if focusedGroupId}
 			<Chat
@@ -167,7 +167,7 @@
 	{:else}
 		<Login bind:uid />
 	{/if}
-</main>
+</div>
 
 <style>
 	:root {
@@ -184,11 +184,11 @@
 	:global(header) {
 		padding: 20px;
 		height: 100px;
-		background-color: var(--primary-color);
 		color: white;
+		background-color: var(--primary-color);
 	}
 	:global(main) {
-		max-height: 100vh;
+		max-height: calc(100vh - 100px);
 		overflow-y: scroll;
 	}
 </style>
