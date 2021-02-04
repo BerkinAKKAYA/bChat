@@ -103,13 +103,13 @@
 	}
 </script>
 
-<main>
-	<a href='/#'>Go Back</a>
+<header>
+	<a href='/#'>Geri</a>
 	<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>Kişi Ekle</button>
-	<button on:click={() => { LeaveGroup(focusedGroupId) }}>Gruptan Çık</button>
+	<button on:click={() => { LeaveGroup(focusedGroupId) }}>Ayrıl</button>
+</header>
 
-	<hr />
-
+<main>
 	{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
 		<p class:received={message.sentBy == uid}>
 			{RelativeFormat(sentAt)} =- {message.text}
@@ -119,3 +119,22 @@
 	<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
 	<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>GÖNDER</button>
 </main>
+
+<style>
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-around;
+	}
+	header * {
+		background: none;
+		color: #fff;
+		padding: 10px;
+		font-size: 1em;
+		cursor: pointer;
+		opacity: .75;
+	}
+	header *:hover {
+		opacity: 1;
+	}
+</style>

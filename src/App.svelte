@@ -121,7 +121,7 @@
 
 	// Gets a phone number and returns UID of related number.
 	function GetUIDOfPhone(phone) {
-		return db.collection("Users").where("tel", "==", phone).get().then(snapshot => {
+		return usersCollection.where("tel", "==", phone).get().then(snapshot => {
 			let docId = null;
 			snapshot.forEach(doc => {
 				if (doc.exists) { docId = doc.id; }
@@ -147,8 +147,6 @@
 </script>
 
 <main>
-	<h1>bChat</h1>
-
 	{#if uid}
 		{#if focusedGroupId}
 			<Chat
@@ -170,3 +168,27 @@
 		<Login bind:uid />
 	{/if}
 </main>
+
+<style>
+	:root {
+		--primary-color: #128c7e;
+	}
+	:global(*) {
+		padding: 0;
+		margin: 0;
+		border: none;
+		outline: none;
+		text-decoration: none;
+		box-sizing: border-box;
+	}
+	:global(header) {
+		padding: 20px;
+		height: 100px;
+		background-color: var(--primary-color);
+		color: white;
+	}
+	:global(main) {
+		max-height: 100vh;
+		overflow-y: scroll;
+	}
+</style>
