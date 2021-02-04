@@ -165,7 +165,7 @@
 			/>
 		{/if}
 	{:else}
-		<Login bind:uid />
+		<Login />
 	{/if}
 </div>
 

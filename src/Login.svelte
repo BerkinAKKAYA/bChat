@@ -1,8 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
 
-	export let uid;
-
 	let phoneInput = "";
 	let codeInput = "";
 	let phoneSent = false;
