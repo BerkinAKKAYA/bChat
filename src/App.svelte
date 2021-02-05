@@ -188,7 +188,7 @@
 		background-color: var(--primary-color);
 	}
 	:global(main) {
-		max-height: calc(100vh - 100px);
+		height: calc(100vh - 100px);
 		overflow-y: scroll;
 	}
 </style>
