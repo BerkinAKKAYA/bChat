@@ -10,7 +10,7 @@
   ],
   "start_url": "/",
   "background_color": "#128c7e",
-  "display": "standalone",
+  "display": "fullscreen",
   "scope": "/",
   "theme_color": "#128c7e",
   "description": "PWA WhatsApp Clone by Berkin AKKAYA"
