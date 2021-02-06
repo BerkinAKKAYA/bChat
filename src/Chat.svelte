@@ -10,6 +10,7 @@
 	// Functions
 	export let PromptPhoneNumber;
 	export let GetUIDOfPhone;
+	export let AddToGroup;
 
 	const groupsCollection = db.collection("Groups");
 

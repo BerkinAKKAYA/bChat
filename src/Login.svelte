@@ -6,6 +6,29 @@
 	let phoneSent = false;
 	let verificationNeeded = false;
 
+	// Format Phone Number (xxx-xxx-xx-xx)
+	$: {
+		if (phoneInput.startsWith(0)) {
+			phoneInput = phoneInput.substring(1);
+		}
+		phoneInput = phoneInput.removeWhitespace();
+		phoneInput = [
+			phoneInput.substring(0, 3),
+			phoneInput.substring(3, 6),
+			phoneInput.substring(6, 8),
+			phoneInput.substring(8, 10),
+		].filter(x => !!x).join(" ");
+	}
+
+	// Format Verification Code (xxx-xxx)
+	$: {
+		codeInput = codeInput.removeWhitespace();
+		codeInput = [
+			codeInput.substring(0, 3),
+			codeInput.substring(3, 6)
+		].filter(x => !!x).join(" ");
+	}
+
 	onMount(() => {
 		window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('signIn', {
 			'size': 'invisible',
@@ -14,7 +37,7 @@
 	});
 
 	function ConfirmSMS() {
-		const code = codeInput.split(" ").join("");
+		const code = codeInput.removeWhitespace();
 
 		if (window.confirmationResult) {
 			window.confirmationResult.confirm(code)
@@ -29,7 +52,7 @@
 		let result = null;
 
 		// User Sent The Phone Number, Show Loading Screen
-		const phoneNumber = "+90" + phoneInput.split(" ").join("");
+		const phoneNumber = "+90" + phoneInput.removeWhitespace();
 		phoneSent = true;
 
 		// Server Received The Phone Number, Wait For The SMS Code
@@ -55,7 +78,7 @@
 		<button
 			id="verifySms"
 			on:click={ConfirmSMS}
-			disabled={codeInput.split(" ").join("").length != 6}
+			disabled={codeInput.removeWhitespace().length != 6}
 		>Doğrula</button>
 	{:else}
 		<h3>Telefon Numarası</h3>
@@ -63,7 +86,7 @@
 		<button
 			id="signIn"
 			on:click={SignIn}
-			disabled={phoneInput.split(" ").join("").length != 10}
+			disabled={phoneInput.removeWhitespace().length != 10}
 		>Giriş Yap</button>
 	{/if}
 </main>

@@ -135,14 +135,38 @@
 		let phone = prompt("Telefon Numarası");
 
 		// Remove Whitespace
-		phone = phone.replace(/\s/g,'');
+		phone = phone.removeWhitespace();
 
 		// Remove country section
 		if (phone.startsWith("+")) {
 			phone = phone.substring(3);
 		}
 
+		// Remove Leading 0
+		if (phone.startsWith("0")) {
+			phone = phone.substring(1);
+		}
+
 		return parseInt(phone);
+	}
+
+	function AddToGroup(userId, groupId) {
+		const userDoc = usersCollection.doc(userId);
+		const groupDoc = groupsCollection.doc(groupId);
+
+		// Add group to the user
+		userDoc.get().then(doc => {
+			const data = doc.data();
+			data.groups = [...new Set([...data.groups, groupId])];
+			userDoc.set(data);
+		});
+
+		// Add user to the group
+		groupDoc.get().then(doc => {
+			const data = doc.data();
+			data.users = [...new Set([...data.users, userId])];
+			groupDoc.set(data);
+		});
 	}
 </script>
 
@@ -155,6 +179,7 @@
 				{ uid }
 				{ PromptPhoneNumber }
 				{ GetUIDOfPhone }
+				{ AddToGroup }
 			/>
 		{:else}
 			<Home
@@ -162,6 +187,7 @@
 				{ uid }
 				{ PromptPhoneNumber }
 				{ GetUIDOfPhone }
+				{ AddToGroup }
 			/>
 		{/if}
 	{:else}

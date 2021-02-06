@@ -4,25 +4,7 @@
 	export let groups;
 	export let PromptPhoneNumber;
 	export let GetUIDOfPhone;
-
-	function AddToGroup(userId, groupId) {
-		const usersDoc = db.collection("Users").doc(userId);
-		const groupDoc = db.collection("Groups").doc(groupId);
-
-		// Add group to the user
-		usersDoc.get().then(doc => {
-			const data = doc.data();
-			data.groups = [...new Set([...data.groups, groupId])];
-			usersDoc.set(data);
-		});
-
-		// Add user to the group
-		groupDoc.get().then(doc => {
-			const data = doc.data();
-			data.users = [...new Set([...data.users, userId])];
-			groupDoc.set(data);
-		});
-	}
+	export let AddToGroup;
 
 	async function PromptToCreateGroup() {
 		const phone = PromptPhoneNumber();
