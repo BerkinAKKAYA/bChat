@@ -1,0 +1,17 @@
+{
+  "short_name": "bChat",
+  "name": "bChat | PWA WhatsApp Clone by Berkin AKKAYA",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#128c7e",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#128c7e",
+  "description": "PWA WhatsApp Clone by Berkin AKKAYA"
+}
