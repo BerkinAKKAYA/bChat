@@ -13,13 +13,14 @@
 	<title>bChat</title>
 
 	<link rel='icon' type='image/png' href='favicon.png'>
-	<link rel='stylesheet' href='build/bundle.css'>
+	<link rel='stylesheet' href='/build/bundle.css'>
 
 	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-analytics.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-firestore.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-auth.js"></script>
 
+	<!-- Firebase Configurations -->
 	<script>
 		const firebaseConfig = {
 			apiKey: "AIzaSyAjK6t4sb4Ho07DO096ZzDJdlzWDCNbtRg",
@@ -38,7 +39,14 @@
 		auth.languageCode = 'tr';
 	</script>
 
-	<script defer src='build/bundle.js'></script>
+	<!-- UTILS -->
+	<script>
+		String.prototype.removeWhitespace = function () {
+			return this.split(" ").join("");
+		}
+	</script>
+
+	<script defer src='/build/bundle.js'></script>
 </head>
 
 <body>
