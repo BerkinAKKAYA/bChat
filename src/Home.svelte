@@ -34,6 +34,14 @@
 			AddToGroup(secondUserId, docRef.id);
 		});
 	}
+
+	function GenerateGroupName(users, maxLength) {
+		// Exclude the logged in user
+		users = Object.values(users).slice(1);
+
+		// Convert to string and leave spaces between users
+		return users.toString().split(",").join(", ");
+	}
 </script>
 
 <header>
@@ -46,7 +54,7 @@
 <main>
 	{#each Object.entries(groups) as [groupId, group]}
 		<a href={`#${groupId}`} class="linkToGroup">
-			{Object.values(group.users)}
+			{ GenerateGroupName(group.users, 30) }
 		</a>
 
 		<div class="seperator" />
@@ -85,7 +93,7 @@
 	}
 	.linkToGroup {
 		padding: 20px 50px;
-		margin: 0 50px;
+		margin: 0 20px;
 		color: #132;
 	}
 	.seperator {
