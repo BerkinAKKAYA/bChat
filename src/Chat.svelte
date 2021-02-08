@@ -126,7 +126,7 @@
 <main>
 	<div id="messages">
 		{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
-			<p class="message" class:received={message.sentBy == uid}>
+			<p class="message" class:sent={message.sentBy == uid}>
 				{#if message.sentBy != uid}
 					<span class="sender">{groups[focusedGroupId]["users"][message.sentBy]}</span>
 				{/if}
@@ -176,40 +176,40 @@
 	}
 	.message {
 		max-width: 80%;
+		min-width: 200px;
 		display: inline-flex;
 		flex-direction: column;
-
-		border: 1px solid var(--primary-color);
-		padding: 20px;
-		margin: 2px;
+		padding: 12px 18px;
+		margin: 3px 0;
 	}
-	.message:not(.received) {
-		border-radius: 0 0 0 20px;
-		background-color: #eeffff;
+	.message:not(.sent) {
+		border-radius: 0 10px 10px 10px;
 		align-self: flex-start;
+		box-shadow: 0 0 4px #aaa;
 	}
-	.message.received {
-		border-radius: 0 0 20px 0;
-		background-color: #ddffff;
+	.message.sent {
+		border-radius: 10px 0 10px 10px;
 		align-self: flex-end;
+		background: var(--primary-color);
+		color: white;
 	}
 
 	.message .sender {
-		opacity: .6;
+		opacity: .5;
 	}
 	.message .text {
 		padding: 5px 0;
 	}
 	.message .timespan {
 		align-self: flex-end;
-		opacity: .4;
+		opacity: .3;
 	}
 
 	#sendMessage {
 		height: 50px;
 		display: grid;
 		grid-template-columns: 1fr 50px;
-		gap: 20px;
+		gap: 10px;
 		
 		position: absolute;
 		bottom: 10px;
