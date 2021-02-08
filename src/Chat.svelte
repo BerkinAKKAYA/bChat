@@ -127,7 +127,11 @@
 	<div id="messages">
 		{#each Object.entries(groups[focusedGroupId].messages) as [sentAt, message]}
 			<p class="message" class:received={message.sentBy == uid}>
-				{RelativeFormat(sentAt)} ||| {message.text}
+				{#if message.sentBy != uid}
+					<span class="sender">{groups[focusedGroupId]["users"][message.sentBy]}</span>
+				{/if}
+				<span class="text">{message.text}</span>
+				<span class="timespan">{RelativeFormat(sentAt)}</span>
 			</p>
 		{/each}
 	</div>
@@ -160,10 +164,45 @@
 		height: calc(100vh - 170px);
 	}
 
+	#messages {
+		max-width: 800px;
+		display: flex;
+		flex-direction: column;
+		margin: 10px;
+
+		position: relative;
+		left: 50%;
+		transform: translateX(-50%);
+	}
 	.message {
-		border: 1px solid #eee;
+		max-width: 80%;
+		display: inline-flex;
+		flex-direction: column;
+
+		border: 1px solid var(--primary-color);
 		padding: 20px;
 		margin: 2px;
+	}
+	.message:not(.received) {
+		border-radius: 0 0 0 20px;
+		background-color: #eeffff;
+		align-self: flex-start;
+	}
+	.message.received {
+		border-radius: 0 0 20px 0;
+		background-color: #ddffff;
+		align-self: flex-end;
+	}
+
+	.message .sender {
+		opacity: .6;
+	}
+	.message .text {
+		padding: 5px 0;
+	}
+	.message .timespan {
+		align-self: flex-end;
+		opacity: .4;
 	}
 
 	#sendMessage {
