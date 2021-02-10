@@ -131,8 +131,15 @@
 	}
 
 	// Contacts API will be used here...
-	function PromptPhoneNumber() {
-		let phone = prompt("Telefon Numarası");
+	async function PromptPhoneNumber() {
+		let phone = null;
+
+		if ('contacts' in navigator) {
+			const results = await navigator.contacts.select(['tel'], { multiple: false });
+			phone = results[0].tel[0];
+		} else {
+			phone = prompt("Telefon Numarası");
+		}
 
 		// Remove Whitespace
 		phone = phone.removeWhitespace();

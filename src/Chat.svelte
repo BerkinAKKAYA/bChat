@@ -28,7 +28,7 @@
 	}
 
 	async function PromptToAddToGroup(groupId) {
-		const phone = PromptPhoneNumber();
+		const phone = await PromptPhoneNumber();
 		const uidToAdd = await GetUIDOfPhone(phone);
 
 		// Given UID does not exists...
