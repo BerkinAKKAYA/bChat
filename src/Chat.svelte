@@ -137,7 +137,7 @@
 	</div>
 
 	<div id="sendMessage">
-		<input type="text" bind:value={messageToSend} placeholder="Mesaj" />
+		<input label="SendMessage" type="text" bind:value={messageToSend} placeholder="Mesaj" />
 		<button on:click={() => SendMessage(focusedGroupId, messageToSend)}>G</button>
 	</div>
 </main>

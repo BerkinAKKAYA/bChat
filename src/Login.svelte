@@ -74,7 +74,7 @@
 
 	{#if verificationNeeded}
 		<h3>Doğrulama Kodu</h3>
-		<input type="text" bind:value={codeInput} placeholder="xxx xxx" pattern="[\d]*" inputmode="numeric" />
+		<input label="VerificationCode" type="text" bind:value={codeInput} placeholder="xxx xxx" pattern="[\d]*" inputmode="numeric" />
 		<button
 			id="verifySms"
 			on:click={ConfirmSMS}
@@ -82,7 +82,7 @@
 		>Doğrula</button>
 	{:else}
 		<h3>Telefon Numarası</h3>
-		<input type="text" bind:value={phoneInput} placeholder="xxx xxx xx xx" pattern="[\d]*" inputmode="numeric" />
+		<input label="PhoneNumber" type="text" bind:value={phoneInput} placeholder="xxx xxx xx xx" pattern="[\d]*" inputmode="numeric" />
 		<button
 			id="signIn"
 			on:click={SignIn}
