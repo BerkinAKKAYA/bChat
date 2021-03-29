@@ -58,4 +58,10 @@
 		You must enable JavaScript to view this app.
 	</noscript>
 </body>
+
+<script>
+	if (navigator.serviceWorker) {
+		navigator.serviceWorker.register('/bChat/sw.js', {scope: '/bChat/'})
+	}
+</script>
 </html>
