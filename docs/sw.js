@@ -6,6 +6,8 @@ var CACHE_NAME = APP_PREFIX + VERSION
 var URLS = [
 	'/bChat/',
 	'/bChat/index.html',
+	'/bChat/build/bundle.css',
+	'/bChat/build/bundle.js',
 	'https://www.gstatic.com/firebasejs/8.2.4/firebase-app.js',
 	'https://www.gstatic.com/firebasejs/8.2.4/firebase-analytics.js',
 	'https://www.gstatic.com/firebasejs/8.2.4/firebase-firestore.js',
