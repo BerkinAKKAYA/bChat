@@ -3,12 +3,19 @@
 	import Chat from './Chat.svelte';
 	import Login from './Login.svelte';
 
+	import firebase from "firebase/app";
+	import "firebase/analytics";
+	import "firebase/firestore";
+	import "firebase/auth";
+
 	let uid = "";
 	let groups = {};				// History of chats { groupId: { messages: { sentAt: { sendBy, text } } } }
 	let userSubscription = null;	// Group subscriptions (call to unsubscribe)
 	let groupSubscriptions = [];	// Chat subscriptions (call each to unsubscribe)
 	
 	let focusedGroupId = "";
+
+	InitializeFirebase();
 
 	const usersCollection = db.collection("Users");
 	const groupsCollection = db.collection("Groups");
@@ -174,6 +181,24 @@
 			data.users = [...new Set([...data.users, userId])];
 			groupDoc.set(data);
 		});
+	}
+
+	function InitializeFirebase() {
+		const firebaseConfig = {
+			apiKey: "AIzaSyAjK6t4sb4Ho07DO096ZzDJdlzWDCNbtRg",
+			authDomain: "bchat0.firebaseapp.com",
+			projectId: "bchat0",
+			storageBucket: "bchat0.appspot.com",
+			messagingSenderId: "305957742645",
+			appId: "1:305957742645:web:0fd13f35aa98dc337ba97c",
+			measurementId: "G-XR57101TSL"
+		};
+		firebase.initializeApp(firebaseConfig);
+		firebase.analytics();
+
+		db = firebase.firestore();
+		auth = firebase.auth();
+		auth.languageCode = 'tr';
 	}
 </script>
 

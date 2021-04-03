@@ -20,32 +20,10 @@
 	<link rel='icon' type='image/png' href='favicon.png'>
 	<link rel='stylesheet' href='build/bundle.css'>
 
-	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-analytics.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-firestore.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-auth.js"></script>
-
-	<!-- Firebase Configurations -->
 	<script>
-		const firebaseConfig = {
-			apiKey: "AIzaSyAjK6t4sb4Ho07DO096ZzDJdlzWDCNbtRg",
-			authDomain: "bchat0.firebaseapp.com",
-			projectId: "bchat0",
-			storageBucket: "bchat0.appspot.com",
-			messagingSenderId: "305957742645",
-			appId: "1:305957742645:web:0fd13f35aa98dc337ba97c",
-			measurementId: "G-XR57101TSL"
-		};
-		firebase.initializeApp(firebaseConfig);
-		firebase.analytics();
+		let db = null;
+		let auth = null;
 
-		const db = firebase.firestore();
-		const auth = firebase.auth();
-		auth.languageCode = 'tr';
-	</script>
-
-	<!-- UTILS -->
-	<script>
 		String.prototype.removeWhitespace = function () {
 			return this.split(" ").join("");
 		}

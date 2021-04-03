@@ -1,6 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
 
+	import firebase from "firebase/app";
+	import "firebase/auth";
+
 	let phoneInput = "";
 	let codeInput = "";
 	let phoneSent = false;
