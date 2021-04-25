@@ -118,7 +118,7 @@
 </script>
 
 <header>
-	<a href='/#'>Geri</a>
+	<a href='#'>Geri</a>
 	<button on:click={() => { PromptToAddToGroup(focusedGroupId) }}>Kişi Ekle</button>
 	<button on:click={() => { LeaveGroup(focusedGroupId) }}>Ayrıl</button>
 </header>

@@ -2314,7 +2314,7 @@ var app = (function () {
     			span = element("span");
     			t = text(t_value);
     			attr_dev(span, "class", "sender svelte-16mxxfy");
-    			add_location(span, file$1, 130, 5, 3360);
+    			add_location(span, file$1, 130, 5, 3359);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, span, anchor);
@@ -2365,12 +2365,12 @@ var app = (function () {
     			t3 = text(t3_value);
     			t4 = space();
     			attr_dev(span0, "class", "text svelte-16mxxfy");
-    			add_location(span0, file$1, 132, 4, 3452);
+    			add_location(span0, file$1, 132, 4, 3451);
     			attr_dev(span1, "class", "timespan svelte-16mxxfy");
-    			add_location(span1, file$1, 133, 4, 3497);
+    			add_location(span1, file$1, 133, 4, 3496);
     			attr_dev(p, "class", "message svelte-16mxxfy");
     			toggle_class(p, "sent", /*message*/ ctx[17].sentBy == /*uid*/ ctx[1]);
-    			add_location(p, file$1, 128, 3, 3268);
+    			add_location(p, file$1, 128, 3, 3267);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, p, anchor);
@@ -2471,30 +2471,30 @@ var app = (function () {
     			t7 = space();
     			button2 = element("button");
     			button2.textContent = "G";
-    			attr_dev(a, "href", "/#");
+    			attr_dev(a, "href", "#");
     			attr_dev(a, "class", "svelte-16mxxfy");
     			add_location(a, file$1, 120, 1, 2969);
     			attr_dev(button0, "class", "svelte-16mxxfy");
-    			add_location(button0, file$1, 121, 1, 2992);
+    			add_location(button0, file$1, 121, 1, 2991);
     			attr_dev(button1, "class", "svelte-16mxxfy");
-    			add_location(button1, file$1, 122, 1, 3076);
+    			add_location(button1, file$1, 122, 1, 3075);
     			attr_dev(header, "class", "svelte-16mxxfy");
     			add_location(header, file$1, 119, 0, 2959);
     			attr_dev(div0, "id", "messages");
     			attr_dev(div0, "class", "svelte-16mxxfy");
-    			add_location(div0, file$1, 126, 1, 3166);
+    			add_location(div0, file$1, 126, 1, 3165);
     			attr_dev(input, "label", "SendMessage");
     			attr_dev(input, "type", "text");
     			attr_dev(input, "placeholder", "Mesaj");
     			attr_dev(input, "class", "svelte-16mxxfy");
-    			add_location(input, file$1, 139, 2, 3605);
+    			add_location(input, file$1, 139, 2, 3604);
     			attr_dev(button2, "class", "svelte-16mxxfy");
-    			add_location(button2, file$1, 140, 2, 3696);
+    			add_location(button2, file$1, 140, 2, 3695);
     			attr_dev(div1, "id", "sendMessage");
     			attr_dev(div1, "class", "svelte-16mxxfy");
-    			add_location(div1, file$1, 138, 1, 3580);
+    			add_location(div1, file$1, 138, 1, 3579);
     			attr_dev(main, "class", "svelte-16mxxfy");
-    			add_location(main, file$1, 125, 0, 3158);
+    			add_location(main, file$1, 125, 0, 3157);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
